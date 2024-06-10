@@ -1,7 +1,8 @@
 import { serve } from '@hono/node-server';
-import { randomUUID } from 'crypto';
 import { Hono } from 'hono';
 import { Server } from 'socket.io';
+import { PlayerManager } from './Player/PlayerManager';
+import { GameManager } from './game/GameManager';
 
 const app = new Hono();
 
@@ -23,52 +24,40 @@ export const io = new Server(server, {
   },
 });
 
-type TState = 'waiting' | 'playing' | 'finished';
-
-type TGame = {
-  gameID: string;
-  gameName: string;
-  players: string[];
-  state: TState;
-  data: any;
-};
-const games: Record<string, TGame> = {};
-const starterData: Record<string, any> = {
-  'puissance-4': {
-    grid: Array.from({ length: 6 }, () => Array.from({ length: 7 }, () => null)),
-    currentPlayer: '',
-  },
-  '...': {},
-};
+const gm = new GameManager();
+const pm = new PlayerManager();
 
 io.on('connection', (socket) => {
   console.log('user connected');
+  pm.createPlayer({ name: '', socket });
 
   socket.on('disconnect', () => {
+    pm.deletePlayer(socket);
+    const id = pm.getIdFromSocket(socket);
+    if (!id) return;
+    const games = gm.getPlayerGames(id);
+    games.forEach((game) => {
+      gm.deleteGame(game.id);
+    });
     console.log('user disconnected');
   });
 
-  socket.on('test', (data) => {
-    console.log(data);
+  socket.on('update-name', (data: { name: string }) => {
+    console.log('update-name', data.name);
+    pm.updatePlayerName(socket, data.name);
   });
 
-  socket.on('create-game', (data: { playerName: string; gameName: string }) => {
+  socket.on('create-game', (data: { name: string }) => {
     console.log('create-game');
-    const gameID = randomUUID();
-    const game: TGame = {
-      gameID,
-      gameName: data.gameName,
-      players: [data.playerName],
-      state: 'waiting',
-      data: starterData[data.gameName],
-    };
-    games[gameID] = game;
+    const id = pm.getIdFromSocket(socket);
+    if (!id) return;
+    const gameID = gm.createGame({ id, owner: data.name });
     io.emit('game-created', { gameID });
   });
 
   socket.on('delete-game', (data: { gameID: string }) => {
     console.log('delete-game');
-    delete games[data.gameID];
+    gm.deleteGame(data.gameID);
     io.emit('game-deleted', { gameID: data.gameID });
   });
 });

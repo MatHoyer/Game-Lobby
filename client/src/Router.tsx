@@ -1,5 +1,5 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import { Home, Lobby, Login, NotFound, Puissance4 } from './Pages';
+import { Home, Lobby, Login, NotFound } from './Pages';
 import { useUserStore } from './store';
 
 export const routes = [
@@ -36,7 +36,6 @@ export const Router = () => {
       </Route>
       <Route element={<LoggedRoutes />}>
         <Route path="/" element={<Home />} />
-        <Route path="/puissance-4" element={<Puissance4 />} />
         <Route path="/gameid/:id" element={<Lobby />} />
       </Route>
       <Route path="*" element={<NotFound />} />
