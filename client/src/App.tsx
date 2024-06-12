@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Router } from './Router';
 import { NavBar } from './components/Navbar';
 import socket from './lib/socket';
-import { useGameStore, useUserStore } from './store';
+import { TGame, useGameStore, useUserStore } from './store';
 
 export const App = () => {
   const navigate = useNavigate();
@@ -18,11 +18,12 @@ export const App = () => {
       user.setName(name);
     });
 
-    type TGameCreated = {
-      gameID: string;
-    };
-    socket.on('game-created', (data: TGameCreated) => {
-      navigate(`/gameid/${data.gameID}`);
+    socket.on('games', (games: TGame[]) => {
+      game.setGames(games);
+    });
+
+    socket.on('game-created', (gameID: string) => {
+      navigate(`/gameid/${gameID}`);
     });
 
     socket.on('player-list', (players: string[]) => {

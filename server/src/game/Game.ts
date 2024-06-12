@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import { Player } from '../Player/Player';
-import { IGame } from './games/IGame';
+import { IGame, games } from './games/IGame';
 
 type TState = 'waiting' | 'playing' | 'finished';
 
@@ -24,6 +24,14 @@ export class Game {
     this.game = null;
     player.socket.join(this.id);
     this.broadcast('player-list', [player.name]);
+    this.broadcast(
+      'games',
+      games.map((game) => ({
+        name: game.name,
+        minPlayers: game.minPlayers,
+        maxPlayers: game.maxPlayers,
+      }))
+    );
   }
 
   addPlayer(player: Player) {
@@ -42,6 +50,11 @@ export class Game {
       'player-list',
       this.players.map(({ player }) => player.name)
     );
+  }
+
+  updateGameType(name: string) {
+    this.game = games.find((game) => game.name === name) || null;
+    this.broadcast('update-gameName', name);
   }
 
   broadcast(event: string, message: any) {

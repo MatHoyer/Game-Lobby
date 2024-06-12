@@ -56,13 +56,12 @@ io.on('connection', (socket) => {
     const owner = pm.getPlayerFromSocket(socket);
     if (!owner) return;
     const gameID = gm.createGame({ owner, io });
-    owner.socket.emit('game-created', { gameID });
+    owner.socket.emit('game-created', gameID);
   });
 
   socket.on('delete-game', (gameID: string) => {
     console.log('delete-game');
     gm.deleteGame(gameID);
-    io.emit('game-deleted', { gameID: gameID });
   });
 
   socket.on('join-game', (gameID: string) => {
@@ -72,6 +71,13 @@ io.on('connection', (socket) => {
     const player = pm.getPlayerFromSocket(socket);
     if (!player) return;
     game.addPlayer(player);
+  });
+
+  socket.on('game-selected', (data: { id: string; name: string }) => {
+    console.log('game-selected');
+    const game = gm.getGame(data.id);
+    if (!game) return;
+    game.updateGameType(data.name);
   });
 });
 
