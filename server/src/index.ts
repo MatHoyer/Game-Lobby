@@ -32,33 +32,46 @@ io.on('connection', (socket) => {
   pm.createPlayer({ name: '', socket });
 
   socket.on('disconnect', () => {
-    pm.deletePlayer(socket);
-    const id = pm.getIdFromSocket(socket);
-    if (!id) return;
-    const games = gm.getPlayerGames(id);
+    const p = pm.getPlayerFromSocket(socket);
+    if (!p) return;
+    const games = gm.getPlayerGames(p.id);
     games.forEach((game) => {
-      gm.deleteGame(game.id);
+      if (game.players.find(({ player }) => p.id === player.id)?.owner === true) gm.deleteGame(game.id);
+      else game.removePlayer(p);
     });
+    pm.deletePlayer(socket);
     console.log('user disconnected');
   });
 
-  socket.on('update-name', (data: { name: string }) => {
-    console.log('update-name', data.name);
-    pm.updatePlayerName(socket, data.name);
+  socket.on('update-name', (name: string) => {
+    console.log('update-name', name);
+    const success = pm.updatePlayerName(socket, name);
+    const player = pm.getPlayerFromSocket(socket);
+    if (!player) return;
+    player.socket.emit('updated-name', success ? name : '');
   });
 
-  socket.on('create-game', (data: { name: string }) => {
+  socket.on('create-game', () => {
     console.log('create-game');
-    const id = pm.getIdFromSocket(socket);
-    if (!id) return;
-    const gameID = gm.createGame({ id, owner: data.name });
-    io.emit('game-created', { gameID });
+    const owner = pm.getPlayerFromSocket(socket);
+    if (!owner) return;
+    const gameID = gm.createGame({ owner, io });
+    owner.socket.emit('game-created', { gameID });
   });
 
-  socket.on('delete-game', (data: { gameID: string }) => {
+  socket.on('delete-game', (gameID: string) => {
     console.log('delete-game');
-    gm.deleteGame(data.gameID);
-    io.emit('game-deleted', { gameID: data.gameID });
+    gm.deleteGame(gameID);
+    io.emit('game-deleted', { gameID: gameID });
+  });
+
+  socket.on('join-game', (gameID: string) => {
+    console.log('join-game');
+    const game = gm.getGame(gameID);
+    if (!game) return;
+    const player = pm.getPlayerFromSocket(socket);
+    if (!player) return;
+    game.addPlayer(player);
   });
 });
 

@@ -31,7 +31,10 @@ export class PlayerManager {
 
   updatePlayerName(socket: Socket, name: string) {
     const player = this.getPlayerFromSocket(socket);
-    if (!player) return;
+    if (!player) return false;
+    const players = Object.values(this.players);
+    if (players.some((player) => player.name === name)) return false;
     player.name = name;
+    return true;
   }
 }

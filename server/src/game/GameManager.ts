@@ -1,24 +1,31 @@
 import { randomUUID } from 'crypto';
+import { Server } from 'socket.io';
+import { Player } from '../Player/Player';
 import { Game } from './Game';
 
 export class GameManager {
-  games: Record<string, Game>;
+  #games: Record<string, Game>;
 
   constructor() {
-    this.games = {};
+    this.#games = {};
   }
 
-  createGame(data: { owner: string; id: string }) {
+  createGame(data: { owner: Player; io: Server }) {
     const gameID = randomUUID();
-    this.games[gameID] = new Game(gameID, { id: data.id, name: data.owner, owner: true });
+    this.#games[gameID] = new Game(gameID, data.owner, data.io);
     return gameID;
   }
 
   deleteGame(id: string) {
-    delete this.games[id];
+    this.#games[id].broadcast('deleted-game', '');
+    delete this.#games[id];
+  }
+
+  getGame(id: string) {
+    return this.#games[id];
   }
 
   getPlayerGames(playerID: string) {
-    return Object.values(this.games).filter((game) => game.players.some((player) => player.id === playerID));
+    return Object.values(this.#games).filter((game) => game.players.some((player) => player.player.id === playerID));
   }
 }
