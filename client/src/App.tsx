@@ -36,8 +36,11 @@ export const App = () => {
     });
 
     return () => {
+      socket.off('updated-name');
+      socket.off('games');
       socket.off('game-created');
       socket.off('player-list');
+      socket.off('deleted-game');
       socket.disconnect();
     };
   }, []);

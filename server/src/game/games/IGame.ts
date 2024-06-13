@@ -1,11 +1,19 @@
-import { Puissance4 } from './Puissance4';
+import { TPlayerGame } from '../types';
 
-export interface IGame {
+export abstract class IGame {
   name: string;
   minPlayers: number;
   maxPlayers: number;
+  players: TPlayerGame[];
   data: any;
-  loop: () => void;
-}
 
-export const games = [Puissance4];
+  constructor(players: TPlayerGame[]) {
+    this.name = '';
+    this.minPlayers = 0;
+    this.maxPlayers = 0;
+    this.players = players;
+    this.data = {};
+  }
+
+  abstract loop(): void;
+}

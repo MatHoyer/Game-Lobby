@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
 import { Server } from 'socket.io';
 import { Player } from '../Player/Player';
-import { Game } from './Game';
+import { Lobby } from './Lobby';
 
 export class GameManager {
-  #games: Record<string, Game>;
+  #games: Record<string, Lobby>;
 
   constructor() {
     this.#games = {};
@@ -12,11 +12,12 @@ export class GameManager {
 
   createGame(data: { owner: Player; io: Server }) {
     const gameID = randomUUID();
-    this.#games[gameID] = new Game(gameID, data.owner, data.io);
+    this.#games[gameID] = new Lobby(gameID, data.owner, data.io);
     return gameID;
   }
 
   deleteGame(id: string) {
+    if (!this.#games[id]) return;
     this.#games[id].broadcast('deleted-game', '');
     delete this.#games[id];
   }

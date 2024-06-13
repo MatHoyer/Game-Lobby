@@ -1,15 +1,12 @@
 import { Server } from 'socket.io';
 import { Player } from '../Player/Player';
-import { IGame, games } from './games/IGame';
+import { createGame, games } from './games';
+import { IGame } from './games/IGame';
+import { TPlayerGame } from './types';
 
 type TState = 'waiting' | 'playing' | 'finished';
 
-type TPlayerGame = {
-  player: Player;
-  owner: boolean;
-};
-
-export class Game {
+export class Lobby {
   id: string;
   players: TPlayerGame[];
   state: TState;
@@ -41,19 +38,20 @@ export class Game {
       'player-list',
       this.players.map(({ player }) => player.name)
     );
+    this.broadcast('update-gameName', this.game?.name);
   }
 
   removePlayer(player: Player) {
-    player.socket.leave(this.id);
     this.players = this.players.filter((p) => p.player.id !== player.id);
     this.broadcast(
       'player-list',
       this.players.map(({ player }) => player.name)
     );
+    player.socket.leave(this.id);
   }
 
   updateGameType(name: string) {
-    this.game = games.find((game) => game.name === name) || null;
+    this.game = createGame(name, this.players);
     this.broadcast('update-gameName', name);
   }
 

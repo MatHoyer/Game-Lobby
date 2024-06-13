@@ -16,11 +16,12 @@ export const Lobby = () => {
 
   useEffect(() => {
     socket.on('update-gameName', (name) => {
-      console.log(name);
       setSelectedGame(name);
     });
     return () => {
       socket.off('update-gameName');
+      if (isOwner) socket.emit('delete-game', params.id);
+      else socket.emit('leave-game', params.id);
     };
   }, []);
 

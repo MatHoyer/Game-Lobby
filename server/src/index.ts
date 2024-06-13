@@ -73,6 +73,15 @@ io.on('connection', (socket) => {
     game.addPlayer(player);
   });
 
+  socket.on('leave-game', (gameID: string) => {
+    console.log('leave-game');
+    const game = gm.getGame(gameID);
+    if (!game) return;
+    const player = pm.getPlayerFromSocket(socket);
+    if (!player) return;
+    game.removePlayer(player);
+  });
+
   socket.on('game-selected', (data: { id: string; name: string }) => {
     console.log('game-selected');
     const game = gm.getGame(data.id);
