@@ -11,7 +11,7 @@ export class Lobby {
   players: TPlayerGame[];
   state: TState;
   io: Server;
-  game: IGame | null;
+  game: IGame<any> | null;
 
   constructor(gameID: string, player: Player, io: Server) {
     this.id = gameID;
