@@ -10,9 +10,9 @@ export const Home = () => {
   return (
     <div className="flex flex-col items-center space-y-5">
       <h1 className="text-4xl">Mat Games</h1>
-      <Button onClick={() => socket.emit('create-game')}>Create Game</Button>
+      <Button onClick={() => socket.emit('create-lobby')}>Create Game</Button>
       <Input type="text" onChange={(e) => setGameID(e.target.value)} placeholder="Game ID"></Input>
-      <Button disabled={!gameID} onClick={() => socket.emit('join-game', gameID)}>
+      <Button disabled={!gameID} onClick={() => socket.emit('join-lobby', gameID)}>
         <Link to={'/gameid/' + gameID}>Join Game</Link>
       </Button>
     </div>

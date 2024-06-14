@@ -7,8 +7,8 @@ import { TGame, useGameStore, useUserStore } from './store';
 
 export const App = () => {
   const navigate = useNavigate();
-  const game = useGameStore();
   const user = useUserStore();
+  const game = useGameStore();
 
   useEffect(() => {
     socket.connect();
@@ -18,12 +18,12 @@ export const App = () => {
       user.setName(name);
     });
 
-    socket.on('games', (games: TGame[]) => {
-      game.setGames(games);
+    socket.on('lobby-created', (gameID: string) => {
+      navigate(`/gameid/${gameID}`);
     });
 
-    socket.on('game-created', (gameID: string) => {
-      navigate(`/gameid/${gameID}`);
+    socket.on('games', (games: TGame[]) => {
+      game.setGames(games);
     });
 
     socket.on('player-list', (players: string[]) => {
@@ -31,16 +31,11 @@ export const App = () => {
       game.setPlayers(players);
     });
 
-    socket.on('deleted-game', () => {
-      navigate('/');
-    });
-
     return () => {
       socket.off('updated-name');
+      socket.off('lobby-created');
       socket.off('games');
-      socket.off('game-created');
       socket.off('player-list');
-      socket.off('deleted-game');
       socket.disconnect();
     };
   }, []);
