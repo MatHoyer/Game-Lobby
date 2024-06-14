@@ -1,6 +1,7 @@
+import { Games } from './Games';
 import { Home } from './Home';
-import { Lobby } from './Lobby';
 import { Login } from './Login';
 import { NotFound } from './NotFound';
+import { Puissance4 } from './games/Puissance4';
 
-export { Home, Lobby, Login, NotFound };
+export { Games, Home, Login, NotFound, Puissance4 };

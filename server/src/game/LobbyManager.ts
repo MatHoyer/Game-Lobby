@@ -3,7 +3,7 @@ import { Server } from 'socket.io';
 import { Player } from '../Player/Player';
 import { Lobby } from './Lobby';
 
-export class GameManager {
+export class LobbyManager {
   #games: Record<string, Lobby>;
 
   constructor() {
@@ -18,7 +18,7 @@ export class GameManager {
 
   deleteGame(id: string) {
     if (!this.#games[id]) return;
-    this.#games[id].broadcast('deleted-game', '');
+    this.#games[id].broadcast('deleted-lobby', '');
     delete this.#games[id];
   }
 
@@ -27,6 +27,6 @@ export class GameManager {
   }
 
   getPlayerGames(playerID: string) {
-    return Object.values(this.#games).filter((game) => game.players.some((player) => player.player.id === playerID));
+    return Object.values(this.#games).filter((game) => game.players.some((player) => player.id === playerID));
   }
 }

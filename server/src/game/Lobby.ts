@@ -1,24 +1,39 @@
 import { Server } from 'socket.io';
 import { Player } from '../Player/Player';
-import { createGame, games } from './games';
-import { IGame } from './games/IGame';
-import { TPlayerGame } from './types';
+
+const games = [
+  {
+    name: 'puissance 4',
+    minPlayers: 2,
+    maxPlayers: 2,
+    board: Array(7)
+      .fill(0)
+      .map(() => Array(6).fill('')) as string[][],
+  },
+];
 
 type TState = 'waiting' | 'playing' | 'finished';
 
 export class Lobby {
   id: string;
-  players: TPlayerGame[];
+  players: Player[];
   state: TState;
   io: Server;
-  game: IGame<any> | null;
+  game: (typeof games)[0];
 
   constructor(gameID: string, player: Player, io: Server) {
     this.id = gameID;
-    this.players = [{ player, owner: true }];
+    this.players = [player];
     this.state = 'waiting';
+    this.game = {
+      name: '',
+      minPlayers: 2,
+      maxPlayers: 2,
+      board: Array(7)
+        .fill(0)
+        .map(() => Array(6).fill('')) as string[][],
+    };
     this.io = io;
-    this.game = null;
     player.socket.join(this.id);
     this.broadcast('player-list', [player.name]);
     this.broadcast(
@@ -31,27 +46,30 @@ export class Lobby {
     );
   }
 
+  isOwner(player: Player) {
+    return player === this.players[0];
+  }
+
   addPlayer(player: Player) {
-    this.players.push({ player, owner: false });
+    this.players.push(player);
     player.socket.join(this.id);
     this.broadcast(
       'player-list',
-      this.players.map(({ player }) => player.name)
+      this.players.map((player) => player.name)
     );
     this.broadcast('update-gameName', this.game?.name);
   }
 
   removePlayer(player: Player) {
-    this.players = this.players.filter((p) => p.player.id !== player.id);
+    this.players = this.players.filter((p) => p.id !== player.id);
     this.broadcast(
       'player-list',
-      this.players.map(({ player }) => player.name)
+      this.players.map((player) => player.name)
     );
     player.socket.leave(this.id);
   }
 
   updateGameType(name: string) {
-    this.game = createGame(name, this.players);
     this.broadcast('update-gameName', name);
   }
 
