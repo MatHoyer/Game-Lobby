@@ -20,6 +20,7 @@ const Lobby = () => {
     });
 
     socket.on('game-started', (starter: string) => {
+      console.log(starter);
       setIsPlaying(true);
       game.setStarter(starter);
     });
@@ -41,7 +42,12 @@ const Lobby = () => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(id ? id : '');
+    const el = document.createElement('textarea');
+    el.value = id || '';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
   };
 
   return (
@@ -80,7 +86,7 @@ const Lobby = () => {
 
 const Game = () => {
   const { setIsPlaying, selectedGame, setSelectedGame } = useGameLobby();
-
+  console.log(selectedGame);
   switch (selectedGame) {
     case 'puissance 4':
       return <Puissance4 />;

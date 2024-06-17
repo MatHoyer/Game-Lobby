@@ -32,6 +32,8 @@ export const Puissance4 = () => {
 
     return () => {
       socket.off('game-play');
+      socket.off('game-end');
+      socket.off('game-board');
     };
   }, []);
 
@@ -45,7 +47,7 @@ export const Puissance4 = () => {
               className="flex flex-col gap-3"
               onClick={() => {
                 if (!shouldPlay) return;
-                socket.emit('game-played', { id, col: i });
+                socket.emit('game-played-puissance-4', { id, col: i });
                 setShouldPlay(false);
               }}
             >

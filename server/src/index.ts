@@ -3,8 +3,8 @@ import { Hono } from 'hono';
 import { Server } from 'socket.io';
 import { PlayerManager } from './Player/PlayerManager';
 import { LobbyManager } from './game/LobbyManager';
-import { isBoardFull } from './game/Puissance4Logics/isGridFull';
-import { isWinPuissance4 } from './game/Puissance4Logics/isWinPuissance4';
+import { isBoardFull } from './game/Logics/puissance4/isBoardFull';
+import { isWinPuissance4 } from './game/Logics/puissance4/isWinPuissance4';
 
 const app = new Hono();
 
@@ -91,16 +91,36 @@ io.on('connection', (socket) => {
     game.updateGameType(data.name);
   });
 
-  socket.on('start-game', (id: string) => {
+  socket.on('start-game', async (id: string) => {
     console.log('start-game');
     const game = lm.getGame(id);
     if (!game) return;
-    game.broadcast('game-started', game.players[0].name);
+    switch (game.game.name) {
+      case 'puissance 4':
+        game.broadcast('game-started', game.players[0].name);
+        break;
+      case 'tusmo':
+        fetch('https://trouve-mot.fr/api/random')
+          .then((response) => response.json())
+          .then((word) => {
+            game.game.data.word = word.name;
+            game.game.data.categorie = word.categorie;
+          });
+        game.game.data.board = Array(6)
+          .fill(0)
+          .map(() => Array(game.game.data.word.length).fill({ color: '', letter: '' }));
+        game.broadcast('game-started', game.game.data);
+        break;
+      default:
+        return;
+    }
   });
 
-  // Puissance 4
-  socket.on('game-played', (data: { id: string; col: number }) => {
-    console.log('game-played');
+  /* ====================================================
+                     PUISSANCE 4
+  =======================================================*/
+  socket.on('game-played-puissance-4', (data: { id: string; col: number }) => {
+    console.log('game-played-puissance-4');
     const { id, col } = data;
     const game = lm.getGame(id);
     if (!game) return;
@@ -108,23 +128,23 @@ io.on('connection', (socket) => {
     const player = pm.getPlayerFromSocket(socket);
     if (!player) return;
 
-    const index = game.game.board[col].findIndex((cell) => cell !== '');
+    const index = game.game.data.board[col].findIndex((cell: string) => cell !== '');
     if (index === -1) {
-      game.game.board[col][5] = player.name;
+      game.game.data.board[col][5] = player.name;
     } else {
-      if (!game.game.board[col].some((cell) => cell === '')) {
+      if (!game.game.data.board[col].some((cell: string) => cell === '')) {
         player.socket.emit('game-play');
         return;
       }
-      game.game.board[col][index - 1] = player.name;
+      game.game.data.board[col][index - 1] = player.name;
     }
-    game.broadcast('game-board', game.game.board);
+    game.broadcast('game-board', game.game.data.board);
 
-    if (isWinPuissance4(game.game.board, player.name)) {
+    if (isWinPuissance4(game.game.data.board, player.name)) {
       game.broadcast('game-end', player.name);
       return;
     }
-    if (isBoardFull(game.game.board)) {
+    if (isBoardFull(game.game.data.board)) {
       game.broadcast('game-end', '');
       return;
     }

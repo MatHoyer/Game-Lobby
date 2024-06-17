@@ -17,7 +17,7 @@ export const Home = () => {
         disabled={!gameID}
         onClick={() => {
           socket.emit('join-lobby', gameID);
-          navigate('/' + gameID);
+          navigate('/gameid/' + gameID);
         }}
       >
         Join Game

@@ -1,14 +1,23 @@
 import { Server } from 'socket.io';
 import { Player } from '../Player/Player';
 
-const games = [
+type TGame = {
+  name: string;
+  minPlayers: number;
+  maxPlayers: number;
+  data: any;
+};
+
+const games: TGame[] = [
   {
     name: 'puissance 4',
     minPlayers: 2,
     maxPlayers: 2,
-    board: Array(7)
-      .fill(0)
-      .map(() => Array(6).fill('')) as string[][],
+    data: {
+      board: Array(7)
+        .fill(0)
+        .map(() => Array(6).fill('')) as string[][],
+    },
   },
 ];
 
@@ -19,7 +28,7 @@ export class Lobby {
   players: Player[];
   state: TState;
   io: Server;
-  game: (typeof games)[0];
+  game: TGame;
 
   constructor(gameID: string, player: Player, io: Server) {
     this.id = gameID;
@@ -29,9 +38,7 @@ export class Lobby {
       name: '',
       minPlayers: 2,
       maxPlayers: 2,
-      board: Array(7)
-        .fill(0)
-        .map(() => Array(6).fill('')) as string[][],
+      data: {},
     };
     this.io = io;
     player.socket.join(this.id);
@@ -71,6 +78,9 @@ export class Lobby {
 
   updateGameType(name: string) {
     this.broadcast('update-gameName', name);
+    const game = games.find((game) => game.name === name);
+    if (!game) return;
+    this.game = game;
   }
 
   broadcast(event: string, message: any) {
