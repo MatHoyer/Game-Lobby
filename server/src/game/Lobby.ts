@@ -8,15 +8,19 @@ type TGame = {
   data: any;
 };
 
+const getEmptyPuissance4Board = () => {
+  return Array(7)
+    .fill(0)
+    .map(() => Array(6).fill('')) as string[][];
+};
+
 const games: TGame[] = [
   {
     name: 'puissance 4',
     minPlayers: 2,
     maxPlayers: 2,
     data: {
-      board: Array(7)
-        .fill(0)
-        .map(() => Array(6).fill('')) as string[][],
+      board: getEmptyPuissance4Board(),
     },
   },
 ];
@@ -80,6 +84,7 @@ export class Lobby {
     this.broadcast('update-gameName', name);
     const game = games.find((game) => game.name === name);
     if (!game) return;
+    game.data.board = getEmptyPuissance4Board();
     this.game = game;
   }
 
