@@ -37,8 +37,9 @@ export const Puissance4 = () => {
         })
         .filter((row) => row !== undefined);
       const random = Math.round(Math.random() * rows.length);
-      if (rows[random] === undefined) play(-1);
-      play(rows[random]);
+      const wantedRow = rows[random];
+      if (wantedRow === undefined) play(-1);
+      play(wantedRow as number);
     }, duration * 1000);
     setTimerId(id);
   };
