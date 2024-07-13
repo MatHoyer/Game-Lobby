@@ -139,7 +139,6 @@ io.on('connection', (socket) => {
       }
     }
     const players = game.players.filter((p) => p !== player);
-    if (players.length - 1 <= 0) return;
     players[0]?.socket.emit('game-play');
   });
 });
