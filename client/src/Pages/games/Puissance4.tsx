@@ -14,7 +14,7 @@ export const Puissance4 = () => {
   const [shouldPlay, setShouldPlay] = useState(game.starter === user.name);
   const [timer, setTimer] = useState(Date.now());
   const [timeRemaining, setTimeRemaining] = useState(5);
-  const duration = 5;
+  const duration = 30;
   const [timerId, setTimerId] = useState<NodeJS.Timeout | undefined>(undefined);
   const [firstPlayed, setFirstPlayed] = useState(game.starter === user.name ? false : true);
 
