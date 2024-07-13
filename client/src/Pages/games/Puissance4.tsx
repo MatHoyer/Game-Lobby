@@ -12,14 +12,58 @@ export const Puissance4 = () => {
   const user = useUserStore();
   const navigate = useNavigate();
   const [shouldPlay, setShouldPlay] = useState(game.starter === user.name);
+  const [timer, setTimer] = useState(Date.now());
+  const [timeRemaining, setTimeRemaining] = useState(5);
+  const duration = 5;
+  const [timerId, setTimerId] = useState<NodeJS.Timeout | undefined>(undefined);
+  const [firstPlayed, setFirstPlayed] = useState(game.starter === user.name ? false : true);
 
   const [lastBoard, setLastBoard] = useState<string[][]>(Array(7).fill(Array(6).fill('')));
   const [board, setBoard] = useState<string[][]>(Array(7).fill(Array(6).fill('')));
   const [winner, setWinner] = useState('');
 
+  const play = (col: number) => {
+    clearTimeout(timerId);
+    setShouldPlay(false);
+    socket.emit('game-played-puissance-4', { id, col: col });
+  };
+
+  const createTimer = () => {
+    clearTimeout(timerId);
+    const id = setTimeout(() => {
+      const rows = board
+        .map((row, index) => {
+          if (row[0] === '') return index;
+        })
+        .filter((row) => row !== undefined);
+      const random = Math.round(Math.random() * rows.length);
+      console.log(board, rows, random, rows[random]);
+      play(rows[random]);
+    }, duration * 1000);
+    setTimerId(id);
+  };
+
   useEffect(() => {
+    setTimeout(() => {
+      if (!shouldPlay) {
+        if (timeRemaining <= 0) setTimeRemaining(duration);
+        return;
+      }
+      setTimeRemaining(Math.round(duration - (Date.now() - timer) / 1000));
+    }, 1000);
+  }, [timer, timeRemaining]);
+
+  useEffect(() => {
+    if (!firstPlayed && shouldPlay) {
+      setFirstPlayed(true);
+      setTimer(Date.now());
+      createTimer();
+    }
+
     socket.on('game-play', () => {
       setShouldPlay(true);
+      setTimer(Date.now());
+      createTimer();
     });
 
     socket.on('game-end', (name: string) => {
@@ -49,8 +93,7 @@ export const Puissance4 = () => {
               className="flex flex-col gap-3"
               onClick={() => {
                 if (!shouldPlay) return;
-                socket.emit('game-played-puissance-4', { id, col: i });
-                setShouldPlay(false);
+                play(i);
               }}
             >
               {col.map((cell, j) => {
@@ -70,7 +113,12 @@ export const Puissance4 = () => {
           );
         })}
       </div>
-      {shouldPlay && <div className="text-center text-2xl">Your turn</div>}
+      {shouldPlay && (
+        <div className="text-center text-2xl">
+          <p>Your turn</p>
+          <p>{timeRemaining}sec</p>
+        </div>
+      )}
       {winner !== '' && (
         <div className={cn('text-center text-2xl', winner === user.name ? 'text-green-500' : 'text-red-500')}>
           {winner === user.name ? 'You win' : 'You lose'}

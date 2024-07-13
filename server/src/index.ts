@@ -99,18 +99,6 @@ io.on('connection', (socket) => {
       case 'puissance 4':
         game.broadcast('game-started', game.players[0].name);
         break;
-      case 'tusmo':
-        fetch('https://trouve-mot.fr/api/random')
-          .then((response) => response.json())
-          .then((word) => {
-            game.game.data.word = word.name;
-            game.game.data.categorie = word.categorie;
-          });
-        game.game.data.board = Array(6)
-          .fill(0)
-          .map(() => Array(game.game.data.word.length).fill({ color: '', letter: '' }));
-        game.broadcast('game-started', game.game.data);
-        break;
       default:
         return;
     }
@@ -128,27 +116,28 @@ io.on('connection', (socket) => {
     const player = pm.getPlayerFromSocket(socket);
     if (!player) return;
 
-    const index = game.game.data.board[col].findIndex((cell: string) => cell !== '');
-    if (index === -1) {
-      game.game.data.board[col][5] = player.name;
-    } else {
-      if (!game.game.data.board[col].some((cell: string) => cell === '')) {
-        player.socket.emit('game-play');
+    if (game.game.data.board.length - 1 >= col && col >= 0) {
+      const index = game.game.data.board[col].findIndex((cell: string) => cell !== '');
+      if (index === -1) {
+        game.game.data.board[col][5] = player.name;
+      } else {
+        if (!game.game.data.board[col].some((cell: string) => cell === '')) {
+          player.socket.emit('game-play');
+          return;
+        }
+        game.game.data.board[col][index - 1] = player.name;
+      }
+      game.broadcast('game-board', game.game.data.board);
+
+      if (isWinPuissance4(game.game.data.board, player.name)) {
+        game.broadcast('game-end', player.name);
         return;
       }
-      game.game.data.board[col][index - 1] = player.name;
+      if (isBoardFull(game.game.data.board)) {
+        game.broadcast('game-end', '');
+        return;
+      }
     }
-    game.broadcast('game-board', game.game.data.board);
-
-    if (isWinPuissance4(game.game.data.board, player.name)) {
-      game.broadcast('game-end', player.name);
-      return;
-    }
-    if (isBoardFull(game.game.data.board)) {
-      game.broadcast('game-end', '');
-      return;
-    }
-
     const players = game.players.filter((p) => p !== player);
     players[0].socket.emit('game-play');
   });
