@@ -23,6 +23,7 @@ export const Puissance4 = () => {
   const [winner, setWinner] = useState('');
 
   const play = (col: number) => {
+    if (!board[col].some((cell: string) => cell === '')) return;
     clearTimeout(timerId);
     setShouldPlay(false);
     socket.emit('game-played-puissance-4', { id, col: col });
@@ -63,6 +64,7 @@ export const Puissance4 = () => {
 
     socket.on('game-play', () => {
       setShouldPlay(true);
+      setTimeRemaining(duration);
       setTimer(Date.now());
       createTimer();
     });
@@ -93,8 +95,7 @@ export const Puissance4 = () => {
               key={i}
               className="flex flex-col gap-3"
               onClick={() => {
-                if (!shouldPlay) return;
-                play(i);
+                if (shouldPlay) play(i);
               }}
             >
               {col.map((cell, j) => {

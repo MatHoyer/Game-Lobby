@@ -13,7 +13,14 @@ export const Login = () => {
   return (
     <div className="flex flex-col justify-center space-y-5 w-64">
       <h1>Login</h1>
-      <Input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
+      <Input
+        type="text"
+        value={name}
+        onChange={(e) => {
+          if (/^[a-zA-Z]+$/.test(e.target.value) || e.target.value === '') setName(e.target.value);
+        }}
+        placeholder="Name"
+      />
       <Button onClick={handleLogin}>Login</Button>
     </div>
   );
