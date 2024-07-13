@@ -13,6 +13,7 @@ export const Puissance4 = () => {
   const navigate = useNavigate();
   const [shouldPlay, setShouldPlay] = useState(game.starter === user.name);
 
+  const [lastBoard, setLastBoard] = useState<string[][]>(Array(7).fill(Array(6).fill('')));
   const [board, setBoard] = useState<string[][]>(Array(7).fill(Array(6).fill('')));
   const [winner, setWinner] = useState('');
 
@@ -26,8 +27,9 @@ export const Puissance4 = () => {
       setTimeout(() => navigate('/'), 3000);
     });
 
-    socket.on('game-board', (board: string[][]) => {
-      setBoard(board);
+    socket.on('game-board', (receivedBoard: string[][]) => {
+      setLastBoard(board);
+      setBoard(receivedBoard);
     });
 
     return () => {
@@ -35,7 +37,7 @@ export const Puissance4 = () => {
       socket.off('game-end');
       socket.off('game-board');
     };
-  }, []);
+  }, [board]);
 
   return (
     <div className="flex flex-col gap-5 mt-5">
@@ -52,11 +54,14 @@ export const Puissance4 = () => {
               }}
             >
               {col.map((cell, j) => {
+                if (cell !== lastBoard[i][j]) cell += ' last';
+                else cell = cell.split(' ')[0];
+                const [name, status] = cell.split(' ');
                 return (
                   <Circle
                     key={i + j}
-                    color={'grey'}
-                    fill={cell === '' ? 'grey' : cell === user.name ? 'blue' : 'red'}
+                    color={status === 'last' ? 'yellow' : 'grey'}
+                    fill={name === '' ? 'grey' : name === user.name ? 'blue' : 'red'}
                     size={90}
                   />
                 );
