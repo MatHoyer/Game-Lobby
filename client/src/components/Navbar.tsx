@@ -1,4 +1,5 @@
 import { routes } from '@/Router';
+import socket from '@/lib/socket';
 import { cn } from '@/lib/utils';
 import { useUserStore } from '@/store';
 import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
@@ -12,6 +13,7 @@ export const NavBar = () => {
   const isAuthenticated = !!username;
 
   const disconect = () => {
+    socket.emit('disconect');
     window.location.reload();
   };
 
