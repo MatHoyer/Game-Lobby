@@ -1,5 +1,4 @@
 import { routes } from '@/Router';
-import socket from '@/lib/socket';
 import { cn } from '@/lib/utils';
 import { useUserStore } from '@/store';
 import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
@@ -13,7 +12,6 @@ export const NavBar = () => {
   const isAuthenticated = !!username;
 
   const disconect = () => {
-    socket.disconnect();
     window.location.reload();
   };
 
@@ -37,7 +35,7 @@ export const NavBar = () => {
             </nav>
           )}
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-5 sm:justify-end">
+        <div className="flex flex-1 items-center space-x-5 justify-end">
           {isAuthenticated && (
             <>
               <div className="flex items-center space-x-4">
