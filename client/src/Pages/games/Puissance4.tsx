@@ -16,7 +16,7 @@ export const Puissance4 = () => {
   const [timeRemaining, setTimeRemaining] = useState(30);
   const duration = 30;
   const [timerId, setTimerId] = useState<NodeJS.Timeout | undefined>(undefined);
-  const [firstPlayed, setFirstPlayed] = useState(game.starter === user.name ? false : true);
+  const [firstPlayed, setFirstPlayed] = useState(game.starter !== user.name);
 
   const [lastBoard, setLastBoard] = useState<string[][]>(Array(7).fill(Array(6).fill('')));
   const [board, setBoard] = useState<string[][]>(Array(7).fill(Array(6).fill('')));
@@ -39,6 +39,7 @@ export const Puissance4 = () => {
         .filter((row) => row !== undefined);
       const random = Math.round(Math.random() * rows.length);
       const wantedRow = rows[random];
+      console.log(wantedRow);
       if (wantedRow === undefined) play(-1);
       play(wantedRow as number);
     }, duration * 1000);
@@ -107,7 +108,7 @@ export const Puissance4 = () => {
                     key={i + j}
                     color={status === 'last' ? 'yellow' : 'grey'}
                     fill={name === '' ? 'grey' : name === user.name ? 'blue' : 'red'}
-                    size={90}
+                    className="size-11 sm:size-14 md:size-20 lg:size-24"
                   />
                 );
               })}
