@@ -39,7 +39,6 @@ export const Puissance4 = () => {
         .filter((row) => row !== undefined);
       const random = Math.round(Math.random() * rows.length);
       const wantedRow = rows[random];
-      console.log(wantedRow);
       if (wantedRow === undefined) play(-1);
       play(wantedRow as number);
     }, duration * 1000);

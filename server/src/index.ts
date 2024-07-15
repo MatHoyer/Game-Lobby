@@ -68,11 +68,15 @@ io.on('connection', (socket) => {
 
   socket.on('join-lobby', (gameID: string) => {
     console.log('join-lobby');
-    const game = lm.getGame(gameID);
-    if (!game) return;
     const player = pm.getPlayerFromSocket(socket);
     if (!player) return;
+    const game = lm.getGame(gameID);
+    if (!game) {
+      player.socket.emit('lobby_joined', '');
+      return;
+    }
     game.addPlayer(player);
+    player.socket.emit('lobby_joined', gameID);
   });
 
   socket.on('leave-lobby', (gameID: string) => {
@@ -82,6 +86,11 @@ io.on('connection', (socket) => {
     const player = pm.getPlayerFromSocket(socket);
     if (!player) return;
     game.removePlayer(player);
+    if (game.players.length <= 0) lm.deleteGame(game.id);
+    if (game.state === 'playing') {
+      game.broadcast('game-end', game?.players[0].name);
+      lm.deleteGame(game.id);
+    }
   });
 
   socket.on('game-selected', (data: { id: string; name: string }) => {
@@ -95,6 +104,7 @@ io.on('connection', (socket) => {
     console.log('start-game');
     const game = lm.getGame(id);
     if (!game) return;
+    game.state = 'playing';
     switch (game.game.name) {
       case 'puissance 4':
         game.broadcast('game-started', game.players[0].name);

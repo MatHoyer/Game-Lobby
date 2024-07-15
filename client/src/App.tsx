@@ -22,12 +22,15 @@ export const App = () => {
       navigate(`/gameid/${gameID}`);
     });
 
+    socket.on('lobby_joined', (gameID: string) => {
+      if (gameID !== '') navigate(`/gameid/${gameID}`);
+    });
+
     socket.on('games', (games: TGame[]) => {
       game.setGames(games);
     });
 
     socket.on('player-list', (players: string[]) => {
-      console.log(players);
       game.setPlayers(players);
     });
 
