@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
     if (!player) return;
     const games = lm.getPlayerGames(player.id);
     games.forEach((game) => {
-      if (game.players[0] === player) lm.deleteGame(game.id);
+      if (game.players[0] === player || game.state === 'playing') lm.deleteGame(game.id);
       else game.removePlayer(player);
     });
     pm.deletePlayer(socket);
